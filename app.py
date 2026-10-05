@@ -5,7 +5,7 @@ import google.generativeai as genai
 st.set_page_config(page_title="Advanced Theatre Lesson Plan Generator", page_icon="🎭", layout="wide")
 
 st.title("🎭 Advanced Theatre Lesson Plan & Curriculum Generator")
-st.markdown("Aap apni Theme, Elaboration, Theatre Form aur Sessions ki sankhya yahan dalein, aur app ek comprehensive, resource-rich aur interactive lesson plan taiyar karega!")
+st.markdown("Aap apni Theme, Elaboration, Theatre Form aur Sessions ki sankhya yahan dalein. Yeh app Google Search se connected hokar ek comprehensive aur interactive lesson plan taiyar karegi!")
 
 # Comprehensive Theatre Forms Database with Associated Skills
 THEATRE_FORMS = {
@@ -36,6 +36,10 @@ THEATRE_FORMS = {
     "Improvisation (Improv)": {
         "description": "Unscripted, spontaneous performance based on audience suggestions and instant creative collaboration.",
         "skills": ["Active Listening", "Spontaneous Problem Solving", "Yes-And Mindset", "Quick Adaptability"]
+    },
+    "Custom / Other Form": {
+        "description": "User-defined theatre form or experimental pedagogy.",
+        "skills": ["Adaptability", "Creative Expression", "Ensemble Work", "Expressive Communication"]
     }
 }
 
@@ -47,11 +51,24 @@ theme = st.sidebar.text_input("Theme Name", "The Living World")
 theme_elaboration = st.sidebar.text_area("Elaborate the Theme (Context & Details)", 
     "Focusing on ecosystems, animal habitats, interdependence of nature, and empathy towards wildlife.")
 
-theatre_style = st.sidebar.selectbox("Theatre Style / Form", list(THEATRE_FORMS.keys()))
+# Theatre Style / Form Section
+st.sidebar.header("🎭 Theatre Style & Form")
+theatre_style_selection = st.sidebar.selectbox("Select Theatre Style / Form", list(THEATRE_FORMS.keys()))
+
+# If custom is selected, allow user to type their own form name
+if theatre_style_selection == "Custom / Other Form":
+    custom_form_name = st.sidebar.text_input("Enter Custom Theatre Form Name", "Shadow Puppetry with Folk Elements")
+    theatre_style = custom_form_name
+    form_desc = "Custom user-specified theatre practice."
+    form_skills = "Collaboration, Expressive Movement, Voice Modulation, Creative Design"
+else:
+    theatre_style = theatre_style_selection
+    form_desc = THEATRE_FORMS[theatre_style]['description']
+    form_skills = ", ".join(THEATRE_FORMS[theatre_style]['skills'])
 
 # Display selected theatre form details & skills in sidebar
-st.sidebar.markdown(f"**Form Description:** {THEATRE_FORMS[theatre_style]['description']}")
-st.sidebar.markdown(f"**Key Skills Targeted:** {', '.join(THEATRE_FORMS[theatre_style]['skills'])}")
+st.sidebar.markdown(f"**Form Description:** {form_desc}")
+st.sidebar.markdown(f"**Key Skills Targeted:** {form_skills}")
 
 grade = st.sidebar.selectbox("Grade", ["Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10"])
 num_sessions = st.sidebar.slider("Number of Sessions", min_value=4, max_value=24, value=16, step=2)
@@ -61,27 +78,32 @@ st.sidebar.header("🎬 Reference & Support (Optional)")
 ref_video = st.sidebar.text_input("Reference Video Link (YouTube/Drive)", placeholder="Paste URL here")
 ref_audio_notes = st.sidebar.text_input("Audio / Voice Modulation Notes", placeholder="e.g., High pitch for birds, deep bass for lion")
 
+# Google Search Enable Option
+enable_google_search = st.sidebar.checkbox("Enable Google Search Live Grounding (Fetch live external facts/stories)", value=True)
+
 if st.sidebar.button("Generate Advanced Lesson Plan"):
     if not api_key:
         st.error("Kripya apni Gemini API Key darj karein!")
     else:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-2.5-flash")
         
-        # Selected form skills mapping
-        form_skills = ", ".join(THEATRE_FORMS[theatre_style]['skills'])
+        # Using Gemini model with tools configuration if google search grounding is enabled
+        tools = [{"google_search": {}}] if enable_google_search else None
+        model = genai.GenerativeModel("gemini-2.5-flash", tools=tools)
         
         prompt = f"""
         You are an expert Master Theatre Curriculum Designer and Educator. Create a comprehensive, professional, and structured theatre lesson plan based on the following parameters:
         
         - Theme: {theme}
         - Theme Elaboration / Context: {theme_elaboration}
-        - Theatre Style: {theatre_style}
+        - Theatre Style / Form: {theatre_style}
         - Core Form Skills to Integrate: {form_skills}
         - Grade: {grade}
         - Total Number of Sessions: {num_sessions}
         - Reference Material / Videos context: {ref_video if ref_video else 'Standard educational visual references'}
         - Audio & Voice Modulation Guidance: {ref_audio_notes if ref_audio_notes else 'Incorporate character-specific voice modulation and soundscape cues.'}
+        
+        Use Google Search if necessary to pull relevant contemporary or contextual facts about the theme to enrich the lesson plan.
         
         Follow this strict curriculum structure:
         1. LEARNING GOAL: A clear one-line learning objective for {grade} students working on role, voice, body language, expression, and the theme context.
@@ -98,7 +120,7 @@ if st.sidebar.button("Generate Advanced Lesson Plan"):
            Provide tailored small devised theatre scripts and group task guidelines based on the theme '{theme}' and style '{theatre_style}' for students to perform during the concluding days.
         """
         
-        with st.spinner("Generating your advanced multi-feature theatre curriculum..."):
+        with st.spinner("Generating your advanced curriculum with live web research..."):
             try:
                 response = model.generate_content(prompt)
                 st.success("Advanced Curriculum Successfully Generated!")
