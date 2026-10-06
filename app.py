@@ -2,135 +2,100 @@ import streamlit as st
 import google.generativeai as genai
 
 # Page Configuration
-st.set_page_config(page_title="Advanced Theatre Lesson Plan Generator", page_icon="🎭", layout="wide")
+st.set_page_config(page_title="Autonomous Theatre Curriculum Search Engine", page_icon="🎭", layout="wide")
 
-st.title("🎭 Advanced Theatre Lesson Plan & Curriculum Generator")
-st.markdown("Aap apni Theme, Elaboration, Theatre Form aur Sessions ki sankhya yahan dalein. Yeh app Google Search se connected hokar ek comprehensive aur interactive lesson plan taiyar karegi!")
+st.title("🎭 Autonomous Theatre Curriculum & Lesson Plan Search Engine")
+st.markdown("Sirf apni **Theme** aur **Theatre Style** daliye. Yeh smart search engine internet se live research karke bachchon ke liye sabse creative aur structured session-wise workpath taiyar karega!")
 
-# Comprehensive Theatre Forms Database with Associated Skills
+# Comprehensive Theatre Forms Database with Core Skill Sets
 THEATRE_FORMS = {
-    "Mime": {
-        "description": "Non-verbal performance focusing on gestures, facial expressions, and body movement without words.",
-        "skills": ["Spatial Awareness", "Body Isolation", "Exaggerated Expression", "Precision", "Imaginative Object Interaction"]
-    },
-    "Clowning": {
-        "description": "Physical comedy, slapstick, and emotional vulnerability through playfulness and direct connection with the audience.",
-        "skills": ["Comic Timing", "Vulnerability", "Physical Comedy", "Spontaneity", "Audience Engagement"]
-    },
-    "Object Theatre": {
-        "description": "Animating inanimate everyday objects or props to represent characters or abstract ideas.",
-        "skills": ["Metaphorical Thinking", "Object Manipulation", "Voice Projection for Objects", "Spatial Economy"]
-    },
-    "Puppetry (Sock / Shadow / Hand)": {
-        "description": "Bringing puppets to life through synchronized hand movements, voice modulation, and light manipulation.",
-        "skills": ["Fine Motor Coordination", "Voice Disassociation", "Rhythm & Sync", "Visual Storytelling"]
-    },
-    "Nukkad Natak (Street Play)": {
-        "description": "High-energy, social-issue-based public theatre using chorus singing, clapping, formation changes, and loud projection.",
-        "skills": ["Vocal Projection", "Ensemble Coordination", "Rhythmic Chanting", "Social Critique", "Physical Formations"]
-    },
-    "Physical Theatre": {
-        "description": "Storytelling primarily through movement, choreography, acrobatics, and bodily expression rather than dialogue.",
-        "skills": ["Core Strength", "Flexibility", "Ensemble Trust", "Kinesthetic Awareness", "Choreographic Memory"]
-    },
-    "Improvisation (Improv)": {
-        "description": "Unscripted, spontaneous performance based on audience suggestions and instant creative collaboration.",
-        "skills": ["Active Listening", "Spontaneous Problem Solving", "Yes-And Mindset", "Quick Adaptability"]
-    },
-    "Custom / Other Form": {
-        "description": "User-defined theatre form or experimental pedagogy.",
-        "skills": ["Adaptability", "Creative Expression", "Ensemble Work", "Expressive Communication"]
-    }
+    "Mime": "Non-verbal performance focusing on gestures, facial expressions, body isolation, spatial awareness, and precision.",
+    "Clowning": "Physical comedy, slapstick, emotional vulnerability, comic timing, spontaneity, and direct audience connection.",
+    "Object Theatre": "Animating everyday props, metaphorical thinking, object manipulation, and spatial economy.",
+    "Puppetry (Sock / Shadow / Hand)": "Fine motor coordination, voice disassociation, rhythm, sync, and visual storytelling.",
+    "Nukkad Natak (Street Play)": "High-energy public theatre, vocal projection, ensemble coordination, rhythmic chanting, and social critique.",
+    "Physical Theatre": "Storytelling through movement, choreography, core strength, ensemble trust, and kinesthetic awareness.",
+    "Improvisation (Improv)": "Unscripted spontaneous performance, active listening, 'Yes-And' mindset, and quick adaptability.",
+    "Custom / Experimental Form": "User-defined dynamic performance style combining multi-disciplinary arts and expression."
 }
 
-# Sidebar for Inputs
-st.sidebar.header("📝 Configuration Panel")
+# Sidebar Input Panel (Clean & Search-Engine Style)
+st.sidebar.header("🔍 Search & Curriculum Parameters")
 api_key = st.sidebar.text_input("Enter your Google Gemini API Key", type="password")
 
-theme = st.sidebar.text_input("Theme Name", "The Living World")
-theme_elaboration = st.sidebar.text_area("Elaborate the Theme (Context & Details)", 
-    "Focusing on ecosystems, animal habitats, interdependence of nature, and empathy towards wildlife.")
+theme = st.sidebar.text_input("Enter Theme Name", "The Living World")
+theme_description = st.sidebar.text_area("Describe the Theme / Context", 
+    "Focusing on animal habitats, ecosystems, interdependence of nature, and empathy towards wildlife.")
 
-# Theatre Style / Form Section
-st.sidebar.header("🎭 Theatre Style & Form")
 theatre_style_selection = st.sidebar.selectbox("Select Theatre Style / Form", list(THEATRE_FORMS.keys()))
 
-# If custom is selected, allow user to type their own form name
-if theatre_style_selection == "Custom / Other Form":
-    custom_form_name = st.sidebar.text_input("Enter Custom Theatre Form Name", "Shadow Puppetry with Folk Elements")
-    theatre_style = custom_form_name
-    form_desc = "Custom user-specified theatre practice."
-    form_skills = "Collaboration, Expressive Movement, Voice Modulation, Creative Design"
+if theatre_style_selection == "Custom / Experimental Form":
+    custom_style = st.sidebar.text_input("Specify Custom Theatre Style", "Mask Theatre & Movement")
+    theatre_style = custom_style
 else:
     theatre_style = theatre_style_selection
-    form_desc = THEATRE_FORMS[theatre_style]['description']
-    form_skills = ", ".join(THEATRE_FORMS[theatre_style]['skills'])
 
-# Display selected theatre form details & skills in sidebar
-st.sidebar.markdown(f"**Form Description:** {form_desc}")
-st.sidebar.markdown(f"**Key Skills Targeted:** {form_skills}")
+grade = st.sidebar.selectbox("Select Target Grade", ["Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10"])
+num_sessions = st.sidebar.slider("Number of Sessions required", min_value=4, max_value=24, value=16, step=2)
 
-grade = st.sidebar.selectbox("Grade", ["Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10"])
-num_sessions = st.sidebar.slider("Number of Sessions", min_value=4, max_value=24, value=16, step=2)
-
-# Optional Reference Materials
-st.sidebar.header("🎬 Reference & Support (Optional)")
-ref_video = st.sidebar.text_input("Reference Video Link (YouTube/Drive)", placeholder="Paste URL here")
-ref_audio_notes = st.sidebar.text_input("Audio / Voice Modulation Notes", placeholder="e.g., High pitch for birds, deep bass for lion")
-
-# Google Search Enable Option
-enable_google_search = st.sidebar.checkbox("Enable Google Search Live Grounding (Fetch live external facts/stories)", value=True)
-
-if st.sidebar.button("Generate Advanced Lesson Plan"):
+if st.sidebar.button("Search & Generate Creative Workpath"):
     if not api_key:
         st.error("Kripya apni Gemini API Key darj karein!")
     else:
         genai.configure(api_key=api_key)
         
-        # Using Gemini model with tools configuration if google search grounding is enabled
-        tools = [{"google_search": {}}] if enable_google_search else None
+        # Enable Google Search Grounding for autonomous internet research
+        tools = [{"google_search": {}}]
         model = genai.GenerativeModel("gemini-2.5-flash", tools=tools)
         
         prompt = f"""
-        You are an expert Master Theatre Curriculum Designer and Educator. Create a comprehensive, professional, and structured theatre lesson plan based on the following parameters:
+        You are an elite Autonomous Theatre Curriculum Search Engine and Master Playwright Educator. 
+        Your task is to conduct deep conceptual research using Google Search based on the user's input, and design a highly creative, resource-rich, and structured theatre workpath.
         
+        Input Parameters:
         - Theme: {theme}
-        - Theme Elaboration / Context: {theme_elaboration}
+        - Theme Context / Description: {theme_description}
         - Theatre Style / Form: {theatre_style}
-        - Core Form Skills to Integrate: {form_skills}
-        - Grade: {grade}
+        - Base Form Description: {THEATRE_FORMS.get(theatre_style_selection, 'Dynamic theatre pedagogy')}
+        - Grade Level: {grade}
         - Total Number of Sessions: {num_sessions}
-        - Reference Material / Videos context: {ref_video if ref_video else 'Standard educational visual references'}
-        - Audio & Voice Modulation Guidance: {ref_audio_notes if ref_audio_notes else 'Incorporate character-specific voice modulation and soundscape cues.'}
         
-        Use Google Search if necessary to pull relevant contemporary or contextual facts about the theme to enrich the lesson plan.
+        Please structure your response into the following clear sections:
         
-        Follow this strict curriculum structure:
-        1. LEARNING GOAL: A clear one-line learning objective for {grade} students working on role, voice, body language, expression, and the theme context.
-        2. WORKING GOALS: Must start with "To..." focusing on core competencies across the sessions.
-        3. BASIC RESOURCES LIST: List required props, sound tools, spatial setups, and costume elements.
-        4. SESSION-WISE BREAKDOWN (From Session 1 to Session {num_sessions}):
-           For each session include: Day/Session #, Content, Session Goal, Skills (using Bloom's Taxonomy words like Identify, Apply, Create), Location, Time, Grade, Teacher.
-           - Hook (5-7 mins): Teacher-led demonstration/video discussion, including a Thinking Routine with clear step-by-step instructions for children.
-           - Core (~20 mins): Student-led skill building starting with "In the continuation of the session the students will...", step-by-step group/pair/individual activities, and one reflective question. Include specific audio/voice modulation cues where applicable.
-           - Closure & AFL: Starting with "To reflect on their learning students will...", naming the AFL tool used.
-           - Stickability: One focused core keyword.
+        1. 🌐 THEME INTELLIGENCE & SUB-TOPICS:
+           Analyze the theme and list 4-5 creative sub-topics, conceptual prompts, and learning angles extracted via live search/pedagogical mapping that will help {grade} students connect deeply with the theme through theatre.
            
-        5. FINAL SESSIONS (Climax / Scriptwork for last few sessions):
-           Provide tailored small devised theatre scripts and group task guidelines based on the theme '{theme}' and style '{theatre_style}' for students to perform during the concluding days.
+        2. 🎯 OVERALL LEARNING & WORKING GOALS:
+           - LEARNING GOAL: A precise one-line learning objective for {grade} students integrating role, voice, body language, expression, and the theme.
+           - WORKING GOALS: Must start with "To..." outlining core theatrical competencies across the sessions.
+           
+        3. 🎒 BASIC RESOURCES & PROPS:
+           List essential low-cost props, spatial requirements, and audio soundscape tools needed.
+           
+        4. 📅 SESSION-WISE WORKPATH (Sessions 1 to {num_sessions}):
+           For each session, provide:
+           - Session # & Content Focus
+           - Session Goal & Bloom's Taxonomy Skill Level (e.g., Identify, Apply, Create)
+           - Hook (5-7 mins): Teacher-led spark/mini-inquiry, featuring a clear Thinking Routine with step-by-step instructions for students.
+           - Core (~20 mins): Student-led skill building beginning with "In the continuation of the session the students will...", structured step-by-step group/pair/individual activities, specific character voice/audio modulation suggestions, and one reflective question.
+           - Closure & AFL: Starting with "To reflect on their learning students will...", naming the Assessment for Learning (AFL) tool used.
+           - Stickability: One core focused keyword.
+           
+        5. 🎭 CONCLUDING STAGEWORK & SMALL SCRIPTS:
+           For the final sessions, provide tailored small devised theatre scripts, dialogue pieces, and group task guidelines based on '{theme}' and '{theatre_style}' for students to perform as a climax.
         """
         
-        with st.spinner("Generating your advanced curriculum with live web research..."):
+        with st.spinner("Searching the web and crafting your creative theatre workpath..."):
             try:
                 response = model.generate_content(prompt)
-                st.success("Advanced Curriculum Successfully Generated!")
+                st.success("Creative Theatre Workpath Successfully Generated!")
                 st.markdown(response.text)
                 
                 # Download option
                 st.download_button(
-                    label="Download Complete Lesson Plan as Text",
+                    label="Download Complete Workpath as Text",
                     data=response.text,
-                    file_name=f"Advanced_Theatre_Plan_{theme.replace(' ', '_')}.txt",
+                    file_name=f"Theatre_Workpath_{theme.replace(' ', '_')}.txt",
                     mime="text/plain"
                 )
             except Exception as e:
