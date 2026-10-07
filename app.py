@@ -36,7 +36,7 @@ else:
     theatre_style = theatre_style_selection
 
 grade = st.sidebar.selectbox("Select Target Grade", ["Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Grade 9", "Grade 10"])
-num_sessions = st.sidebar.slider("Number of Sessions required", min_value=4, max_value=24, value=16, step=2)
+num_sessions = st.sidebar.slider("Number of Sessions required", min_value=4, max_value=24, value=12, step=2)
 
 if st.sidebar.button("Search & Generate Creative Workpath"):
     if not api_key:
@@ -44,8 +44,8 @@ if st.sidebar.button("Search & Generate Creative Workpath"):
     else:
         genai.configure(api_key=api_key)
         
-        # Updated to use gemini-3.8-flash model
-        model = genai.GenerativeModel("gemini-3.8-flash")
+        # Using gemini-1.5-flash model for reliable free tier availability
+        model = genai.GenerativeModel("gemini-1.5-flash")
         
         prompt = f"""
         You are an elite Autonomous Theatre Curriculum Search Engine and Master Playwright Educator. 
