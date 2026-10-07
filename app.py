@@ -5,7 +5,7 @@ import google.generativeai as genai
 st.set_page_config(page_title="Autonomous Theatre Curriculum Search Engine", page_icon="🎭", layout="wide")
 
 st.title("🎭 Autonomous Theatre Curriculum & Lesson Plan Search Engine")
-st.markdown("Sirf apni **Theme** aur **Theatre Style** daliye. Yeh smart search engine bachchon ke liye sabse creative aur structured session-wise workpath taiyar karega!")
+st.markdown("Sirf apni **Theme** aur **Theatre Style** daliye. Yeh smart search engine bachchon ke liye sabse creative aur structured session-wise workpath taiyar karegi!")
 
 # Comprehensive Theatre Forms Database with Core Skill Sets
 THEATRE_FORMS = {
@@ -44,8 +44,8 @@ if st.sidebar.button("Search & Generate Creative Workpath"):
     else:
         genai.configure(api_key=api_key)
         
-        # Using Gemini model without external tool error
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        # Updated to use gemini-3.8-flash model
+        model = genai.GenerativeModel("gemini-3.8-flash")
         
         prompt = f"""
         You are an elite Autonomous Theatre Curriculum Search Engine and Master Playwright Educator. 
