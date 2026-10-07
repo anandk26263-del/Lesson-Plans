@@ -5,7 +5,7 @@ import google.generativeai as genai
 st.set_page_config(page_title="Autonomous Theatre Curriculum Search Engine", page_icon="🎭", layout="wide")
 
 st.title("🎭 Autonomous Theatre Curriculum & Lesson Plan Search Engine")
-st.markdown("Sirf apni **Theme** aur **Theatre Style** daliye. Yeh smart search engine internet se live research karke bachchon ke liye sabse creative aur structured session-wise workpath taiyar karega!")
+st.markdown("Sirf apni **Theme** aur **Theatre Style** daliye. Yeh smart search engine bachchon ke liye sabse creative aur structured session-wise workpath taiyar karega!")
 
 # Comprehensive Theatre Forms Database with Core Skill Sets
 THEATRE_FORMS = {
@@ -44,13 +44,12 @@ if st.sidebar.button("Search & Generate Creative Workpath"):
     else:
         genai.configure(api_key=api_key)
         
-        # Enable Google Search Grounding for autonomous internet research
-        tools = [{"google_search": {}}]
-        model = genai.GenerativeModel("gemini-2.5-flash", tools=tools)
+        # Using Gemini model without external tool error
+        model = genai.GenerativeModel("gemini-2.5-flash")
         
         prompt = f"""
         You are an elite Autonomous Theatre Curriculum Search Engine and Master Playwright Educator. 
-        Your task is to conduct deep conceptual research using Google Search based on the user's input, and design a highly creative, resource-rich, and structured theatre workpath.
+        Your task is to design a highly creative, resource-rich, and structured theatre workpath based on the user's input.
         
         Input Parameters:
         - Theme: {theme}
@@ -63,7 +62,7 @@ if st.sidebar.button("Search & Generate Creative Workpath"):
         Please structure your response into the following clear sections:
         
         1. 🌐 THEME INTELLIGENCE & SUB-TOPICS:
-           Analyze the theme and list 4-5 creative sub-topics, conceptual prompts, and learning angles extracted via live search/pedagogical mapping that will help {grade} students connect deeply with the theme through theatre.
+           Analyze the theme and list 4-5 creative sub-topics, conceptual prompts, and learning angles that will help {grade} students connect deeply with the theme through theatre.
            
         2. 🎯 OVERALL LEARNING & WORKING GOALS:
            - LEARNING GOAL: A precise one-line learning objective for {grade} students integrating role, voice, body language, expression, and the theme.
@@ -85,7 +84,7 @@ if st.sidebar.button("Search & Generate Creative Workpath"):
            For the final sessions, provide tailored small devised theatre scripts, dialogue pieces, and group task guidelines based on '{theme}' and '{theatre_style}' for students to perform as a climax.
         """
         
-        with st.spinner("Searching the web and crafting your creative theatre workpath..."):
+        with st.spinner("Crafting your creative theatre workpath..."):
             try:
                 response = model.generate_content(prompt)
                 st.success("Creative Theatre Workpath Successfully Generated!")
